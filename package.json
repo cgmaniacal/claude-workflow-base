@@ -1,0 +1,7 @@
+{
+  "name": "claude-workflow-base",
+  "private": true,
+  "scripts": {
+    "setup": "node scripts/setup.mjs"
+  }
+}

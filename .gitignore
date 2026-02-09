@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Turbo
+.turbo/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test coverage
+coverage/
+
+# IDE
+.vscode/
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+
+# Claude memory contents (personal, per-session)
+.claude/memory/
+
+# Claude local settings (personal overrides)
+.claude/settings.local.json

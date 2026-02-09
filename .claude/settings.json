@@ -1,0 +1,78 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run dev *)",
+      "Bash(npm run build *)",
+      "Bash(npm run lint *)",
+      "Bash(npm run test *)",
+      "Bash(npx prisma *)",
+      "Bash(npx turbo *)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git branch *)",
+      "Bash(git checkout -b *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git merge *)",
+      "Bash(git worktree *)"
+    ],
+    "deny": [
+      "Read(.env)",
+      "Read(apps/api/.env)",
+      "Read(apps/web/.env)",
+      "Bash(git push --force *)",
+      "Bash(git reset --hard *)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/session_start_recall.sh\"",
+            "timeout": 15,
+            "statusMessage": "Loading memory context..."
+          }
+        ]
+      },
+      {
+        "matcher": "compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/post_compact_recall.sh\"",
+            "timeout": 10,
+            "statusMessage": "Re-loading memory after compaction..."
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/pre_compact_remember.sh\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/stop_remember_nudge.sh\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
