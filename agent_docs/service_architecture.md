@@ -70,6 +70,60 @@ apps/api/src/
 
 Routes -> Services -> Prisma. Routes never access Prisma directly.
 
+### Service Layer Conventions
+
+Services contain all business logic. They are the only layer that calls Prisma.
+
+- **Stateless** — services are pure functions or classes with no request-scoped state. They receive all inputs as arguments.
+- **No `req`/`res` access** — services never import or reference Express types. They accept typed parameters and return typed results. This keeps them testable without HTTP.
+- **Throw domain errors, not HTTP errors** — services throw descriptive errors (`UserNotFoundError`, `DuplicateEmailError`). Route handlers catch these and translate to HTTP status codes. See `service_communication_patterns.md` for error classification.
+- **One service per resource** — `userService.ts`, `postService.ts`, etc. If a service file exceeds 200 lines, split by sub-domain.
+
+```typescript
+// Good: service accepts typed params, returns typed result
+export function createUser(data: CreateUserInput): Promise<User> { ... }
+
+// Bad: service accepts Express req
+export function createUser(req: Request): Promise<User> { ... }
+```
+
+### Security Defaults
+
+These middleware should be configured in `app.ts` for every full-stack project:
+
+| Middleware | Purpose | Package |
+|-----------|---------|---------|
+| **Helmet** | Sets security headers (CSP, HSTS, X-Frame-Options, etc.) | `helmet` |
+| **CORS** | Controls which origins can access the API | `cors` |
+| **Rate limiting** | Prevents abuse and brute-force attacks | `express-rate-limit` |
+
+```typescript
+// app.ts setup order
+import helmet from 'helmet';
+import cors from 'cors';
+import rateLimit from 'express-rate-limit';
+
+app.use(helmet());
+app.use(cors({ origin: process.env.CORS_ORIGIN }));
+app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
+app.use(express.json({ limit: '10kb' })); // prevent large payload attacks
+```
+
+### Environment Variables
+
+- All secrets and environment-specific values go in `.env` (never committed)
+- `.env.example` is the contract — lists every variable with placeholder values, committed to git
+- Access via `process.env.VARIABLE_NAME`
+- Validate required env vars at startup (fail fast if missing):
+
+```typescript
+// app.ts or config.ts
+const required = ['DATABASE_URL', 'CORS_ORIGIN'] as const;
+for (const key of required) {
+  if (!process.env[key]) throw new Error(`Missing required env var: ${key}`);
+}
+```
+
 ## packages/shared
 
 Shared code imported by both `apps/web` and `apps/api`.

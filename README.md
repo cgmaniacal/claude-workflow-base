@@ -136,6 +136,17 @@ All user-facing features target:
 
 See `agent_docs/frontend_quality.md` for the full checklist.
 
+### Backend and Database Standards (Full Stack)
+
+All API and database code follows these conventions:
+- **Security:** Helmet, CORS, rate limiting, and request size limits configured by default. Secrets in `.env` only, validated at startup.
+- **Service layer:** Stateless, no `req`/`res` access, throw domain errors (not HTTP errors). One service per resource.
+- **Input validation:** All request bodies validated with Zod at the route handler level before reaching services. Strings trimmed and bounded.
+- **Error handling:** Errors classified (validation, domain, auth, internal) with standard codes. Internal details never leaked to clients.
+- **Database:** Explicit cascade behavior on every relation. N+1 avoidance via `include`/`select`. Transactions for multi-step writes. Soft deletes for audit-sensitive data.
+
+See `agent_docs/service_architecture.md`, `agent_docs/database_schema.md`, and `agent_docs/service_communication_patterns.md` for details.
+
 ## CI/CD
 
 ### GitHub Actions
