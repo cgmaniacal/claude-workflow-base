@@ -15,8 +15,8 @@ export function getRootTemplates(isFullStack, projectName) {
             dev: 'turbo dev',
             build: 'turbo build',
             lint: 'turbo lint',
-            test: 'vitest run',
-            'test:watch': 'vitest',
+            test: 'turbo test',
+            'test:watch': 'turbo test -- --watch',
           },
           devDependencies: {
             turbo: '^2',
@@ -26,7 +26,6 @@ export function getRootTemplates(isFullStack, projectName) {
             'eslint-config-prettier': '^10',
             '@typescript-eslint/parser': '^8',
             '@typescript-eslint/eslint-plugin': '^8',
-            vitest: '^3',
           },
         },
         null,
@@ -90,6 +89,7 @@ dist/
 *.log
 .DS_Store
 coverage/
+.claude/memory/
 `,
   });
 

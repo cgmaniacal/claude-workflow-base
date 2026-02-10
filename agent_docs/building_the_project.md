@@ -4,7 +4,7 @@
 
 - Node.js (latest LTS)
 - npm (comes with Node)
-- MySQL 8+ (local or containerized) — **full-stack projects only**
+- Docker Desktop (provides MySQL via Docker Compose) — **full-stack projects only**
 
 ## Monorepo Setup
 
@@ -26,6 +26,18 @@ apps/api/.env          # DB connection, secrets, port config
 ```
 
 A `.env.example` in each app documents required variables.
+
+## Database (Full Stack)
+
+Full-stack projects use Docker Compose for a local MySQL instance. Start the database before running the app:
+
+```bash
+docker compose up -d db    # Start MySQL in background
+docker compose down        # Stop (data persists in named volume)
+docker compose down -v     # Stop and reset all data
+```
+
+The generated `.env` files already point to the Docker MySQL instance.
 
 ## Scripts
 

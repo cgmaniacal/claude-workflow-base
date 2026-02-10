@@ -19,11 +19,15 @@ export function getApiTemplates(projectName) {
           },
           dependencies: {
             express: '^4',
+            helmet: '^8',
+            cors: '^2',
+            'express-rate-limit': '^7',
             '@prisma/client': '^6',
             '@repo/shared': '*',
           },
           devDependencies: {
             '@types/express': '^4',
+            '@types/cors': '^2',
             prisma: '^6',
             tsx: '^4',
             typescript: '^5',
@@ -62,14 +66,28 @@ export function getApiTemplates(projectName) {
   files.push({
     path: 'apps/api/src/app.ts',
     content: `import express from 'express';
+import helmet from 'helmet';
+import cors from 'cors';
+import rateLimit from 'express-rate-limit';
 
 import { healthRouter } from './routes/health';
 import { errorHandler } from './middleware/errorHandler';
 
+// Validate required env vars at startup
+const required = ['DATABASE_URL', 'CORS_ORIGIN'] as const;
+for (const key of required) {
+  if (!process.env[key]) throw new Error(\`Missing required env var: \${key}\`);
+}
+
 const app = express();
 
-app.use(express.json());
+app.use(helmet());
+app.use(cors({ origin: process.env.CORS_ORIGIN }));
+app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
+app.use(express.json({ limit: '10kb' }));
+
 app.use('/api/v1/health', healthRouter);
+
 app.use(errorHandler);
 
 export { app };
@@ -104,28 +122,40 @@ export { healthRouter };
   });
 
   files.push({
+    path: 'apps/api/src/lib/errors.ts',
+    content: `export class AppError extends Error {
+  constructor(
+    public code: string,
+    message: string,
+    public statusCode: number = 400,
+  ) {
+    super(message);
+  }
+}
+`,
+  });
+
+  files.push({
     path: 'apps/api/src/middleware/errorHandler.ts',
     content: `import type { Request, Response, NextFunction } from 'express';
-
-interface AppError extends Error {
-  statusCode?: number;
-  code?: string;
-}
+import { AppError } from '../lib/errors';
 
 export function errorHandler(
-  err: AppError,
+  err: unknown,
   _req: Request,
   res: Response,
   _next: NextFunction,
 ): void {
-  const statusCode = err.statusCode ?? 500;
-  const code = err.code ?? 'INTERNAL_ERROR';
-  const message = err.message ?? 'An unexpected error occurred';
+  if (err instanceof AppError) {
+    res.status(err.statusCode).json({
+      error: { code: err.code, message: err.message },
+    });
+    return;
+  }
 
-  console.error(\`[Error] \${code}: \${message}\`);
-
-  res.status(statusCode).json({
-    error: { code, message },
+  console.error('Unhandled error:', err);
+  res.status(500).json({
+    error: { code: 'INTERNAL_ERROR', message: 'An unexpected error occurred' },
   });
 }
 `,
@@ -157,6 +187,24 @@ CORS_ORIGIN="http://localhost:5173"
     content: `DATABASE_URL="mysql://devuser:devpassword@localhost:3306/${dbName}"
 PORT=3001
 CORS_ORIGIN="http://localhost:5173"
+`,
+  });
+
+  files.push({
+    path: 'apps/api/vitest.config.ts',
+    content: `import { defineConfig } from 'vitest/config';
+import { resolve } from 'path';
+
+export default defineConfig({
+  test: {
+    globals: true,
+  },
+  resolve: {
+    alias: {
+      '@api': resolve(__dirname, 'src'),
+    },
+  },
+});
 `,
   });
 

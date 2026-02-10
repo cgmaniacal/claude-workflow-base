@@ -70,6 +70,10 @@ Blank line between each group.
 
 All user-facing components must meet accessibility (WCAG 2.1 AA), responsive design, and performance standards. See `agent_docs/frontend_quality.md` for full details, checklist, and testing requirements.
 
+## Backend Conventions (Full Stack)
+
+API and database code follow additional conventions for service architecture, error handling, input validation, and security. See `agent_docs/service_architecture.md`, `agent_docs/service_communication_patterns.md`, and `agent_docs/database_schema.md`.
+
 ## Comments
 
 - Don't comment *what* the code does — make the code self-explanatory.

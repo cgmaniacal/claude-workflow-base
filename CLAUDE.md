@@ -8,8 +8,10 @@
 | Frontend | React, TypeScript, Vite, TailwindCSS, SASS, Zustand | Always |
 | Backend | Express, TypeScript | Optional |
 | Database | MySQL, Prisma ORM | Optional |
+| Local DB | Docker Compose (MySQL container) | Optional |
 | Testing | Vitest | Always |
 | Linting | ESLint + Prettier | Always |
+| CI | GitHub Actions (lint, test, build) | Always |
 | Runtime | Node (latest LTS) | Always |
 
 This boilerplate supports two project scales:

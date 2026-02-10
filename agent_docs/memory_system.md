@@ -10,7 +10,7 @@ Detailed documentation for the persistent memory system. Read this when working 
 | **Every ~15 messages** | Hook nudges Claude to run `/remember` and save key context |
 | **Before compaction** | Hook saves structured summary (active plan state, session notes) |
 | **After compaction** | Hook re-injects key context including active plan progress |
-| **File index** | Auto-updates `.claude/memory/files/` project file index each session |
+| **File index** | Session start hook launches background update of `.claude/memory/files/` project file index |
 
 ## Memory Commands
 
@@ -32,11 +32,10 @@ Detailed documentation for the persistent memory system. Read this when working 
 
 Configured in `.claude/settings.json`:
 
-- **SessionStart (startup/resume)** — `hooks/session_start_recall.sh` — loads last session, preferences, decisions, active plans
+- **SessionStart (startup/resume)** — `hooks/session_start_recall.sh` — loads last session, preferences, decisions, active plans. Also launches `hooks/update_file_index.sh` in the background to update the project file index.
 - **SessionStart (compact)** — `hooks/post_compact_recall.sh` — re-injects key context after compaction
 - **PreCompact** — `hooks/pre_compact_remember.sh` — saves structured compaction summary
 - **Stop** — `hooks/stop_remember_nudge.sh` — counts messages, nudges `/remember` every ~15 exchanges
-- **Background** — `hooks/update_file_index.sh` — auto-maintains project file index
 
 ### Sub-Agents
 

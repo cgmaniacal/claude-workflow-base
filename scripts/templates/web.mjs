@@ -186,5 +186,31 @@ export function App(): React.ReactElement {
 `,
   });
 
+  files.push({
+    path: 'apps/web/vitest.config.ts',
+    content: `import { defineConfig } from 'vitest/config';
+import { resolve } from 'path';
+
+export default defineConfig({
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: './src/test-setup.ts',
+  },
+  resolve: {
+    alias: {
+      '@web': resolve(__dirname, 'src'),
+    },
+  },
+});
+`,
+  });
+
+  files.push({
+    path: 'apps/web/src/test-setup.ts',
+    content: `import '@testing-library/jest-dom/vitest';
+`,
+  });
+
   return files;
 }
