@@ -86,16 +86,13 @@ Before starting a task, consult the relevant doc in `agent_docs/`:
 | `database_schema.md` | Schema changes, migrations, seeding |
 | `service_communication_patterns.md` | API contracts, request/response patterns |
 | `frontend_quality.md` | Accessibility, responsive design, performance, SEO |
+| `authentication.md` | Adding auth (JWT, middleware, roles, token strategy) |
 | `dependency_updates.md` | Reviewing Renovate PRs, adding/updating dependencies |
 | `memory_system.md` | Memory architecture, commands, entry format, rules |
 
 ## Memory
 
-Persistent memory lives at `.claude/memory/` — a hierarchical tree of markdown files organized by domain. Hooks handle context automatically:
-
-- **Session start**: auto-loads last session summary, preferences, recent decisions
-- **Every ~15 messages**: nudges `/remember` to persist key context
-- **Compaction**: saves state before, re-injects after
+Persistent memory at `.claude/memory/` is managed automatically via hooks. Commands:
 
 | Command | What it does |
 |---------|-------------|
@@ -103,4 +100,4 @@ Persistent memory lives at `.claude/memory/` — a hierarchical tree of markdown
 | `/recall [topic]` | Search memory tree for relevant context |
 | `/memory-status` | Show stored memory count by domain |
 
-For full details, see `agent_docs/memory_system.md`.
+See `agent_docs/memory_system.md` for architecture and hook details.

@@ -6,7 +6,7 @@ A boilerplate for building React applications with Claude Code. Supports both fr
 
 - **Node.js 22** (LTS) — install via [nvm](https://github.com/nvm-sh/nvm): `nvm install 22`
 - **npm** (ships with Node)
-- **MySQL** (full stack only) — required if choosing the full-stack configuration
+- **Docker Desktop** (full stack only) — provides MySQL via Docker Compose, no local MySQL installation needed
 
 ## Getting Started
 
@@ -31,6 +31,7 @@ This will prompt you to select either:
 - Scaffolds the full project structure (apps, packages, configs)
 - Detects the directory name and uses it as the project name
 - Generates CI pipeline (`.github/workflows/ci.yml`)
+- Generates `docker-compose.yml` with MySQL (full stack only)
 - Installs all dependencies
 - Initializes the Claude memory tree
 - Removes backend-specific docs if frontend-only
@@ -45,6 +46,7 @@ This will prompt you to select either:
 | Frontend | React, TypeScript, Vite, TailwindCSS, SASS, Zustand | Always |
 | Backend | Express, TypeScript | Full stack only |
 | Database | MySQL, Prisma ORM | Full stack only |
+| Local DB | Docker Compose (MySQL container) | Full stack only |
 | Testing | Vitest | Always |
 | Linting | ESLint (flat config) + Prettier | Always |
 | CI | GitHub Actions | Always |
@@ -100,6 +102,19 @@ The API follows a layered pattern: **Routes -> Services -> Prisma**. Shared type
 
 ## Development
 
+### Full Stack: Start the Database
+
+Full-stack projects use Docker Compose for MySQL. Start the database before running the app:
+
+```bash
+docker compose up -d db    # Start MySQL in background
+npm run dev                # Start API + web via Turbo
+```
+
+To stop the database: `docker compose down` (data persists in a named volume). To reset: `docker compose down -v`.
+
+### Commands
+
 ```bash
 npm run dev          # Start all apps
 npm run build        # Build all apps
@@ -139,13 +154,14 @@ See `agent_docs/frontend_quality.md` for the full checklist.
 ### Backend and Database Standards (Full Stack)
 
 All API and database code follows these conventions:
-- **Security:** Helmet, CORS, rate limiting, and request size limits configured by default. Secrets in `.env` only, validated at startup.
+- **Security:** Helmet, CORS, rate limiting, request size limits, and request correlation IDs configured by default. Secrets in `.env` only, validated at startup.
+- **Authentication:** Default-deny middleware pattern — all routes protected unless explicitly whitelisted. JWT access/refresh tokens, bcrypt password hashing. See `agent_docs/authentication.md`.
 - **Service layer:** Stateless, no `req`/`res` access, throw domain errors (not HTTP errors). One service per resource.
 - **Input validation:** All request bodies validated with Zod at the route handler level before reaching services. Strings trimmed and bounded.
-- **Error handling:** Errors classified (validation, domain, auth, internal) with standard codes. Internal details never leaked to clients.
-- **Database:** Explicit cascade behavior on every relation. N+1 avoidance via `include`/`select`. Transactions for multi-step writes. Soft deletes for audit-sensitive data.
+- **Error handling:** Errors classified (validation, domain, auth, internal) with standard codes. Internal details never leaked to clients. Correlation IDs in all error responses.
+- **Database:** Docker Compose for local MySQL. Explicit cascade behavior on every relation. N+1 avoidance via `include`/`select`. Transactions for multi-step writes. Slow query detection. Soft deletes for audit-sensitive data.
 
-See `agent_docs/service_architecture.md`, `agent_docs/database_schema.md`, and `agent_docs/service_communication_patterns.md` for details.
+See `agent_docs/service_architecture.md`, `agent_docs/database_schema.md`, `agent_docs/service_communication_patterns.md`, and `agent_docs/authentication.md` for details.
 
 ## CI/CD
 

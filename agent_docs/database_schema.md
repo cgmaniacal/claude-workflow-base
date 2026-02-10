@@ -142,6 +142,31 @@ const users = await prisma.user.findMany({
 });
 ```
 
+### Slow Query Detection
+
+Use Prisma middleware to log queries that exceed a time threshold. This catches performance issues from the application's perspective (including connection wait time), not just database execution time.
+
+```typescript
+// lib/prisma.ts
+import { PrismaClient } from '@prisma/client';
+
+export const prisma = new PrismaClient();
+
+const SLOW_QUERY_MS = 500;
+
+prisma.$use(async (params, next) => {
+  const start = Date.now();
+  const result = await next(params);
+  const duration = Date.now() - start;
+  if (duration > SLOW_QUERY_MS) {
+    console.warn(`Slow query: ${params.model}.${params.action} took ${duration}ms`);
+  }
+  return result;
+});
+```
+
+Adjust the threshold per project. In development, a lower threshold (e.g., 100ms) helps catch issues early.
+
 ## Example Model
 
 ```prisma

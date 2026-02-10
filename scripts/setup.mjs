@@ -127,7 +127,7 @@ async function main() {
   const files = [
     ...getRootTemplates(isFullStack, projectName),
     ...getWebTemplates(),
-    ...(isFullStack ? getApiTemplates() : []),
+    ...(isFullStack ? getApiTemplates(projectName) : []),
     ...(isFullStack ? getSharedTemplates() : []),
   ];
 
@@ -144,6 +144,7 @@ async function main() {
     console.log('\n  Cleaning up backend docs...\n');
     removeFile('agent_docs/database_schema.md');
     removeFile('agent_docs/service_communication_patterns.md');
+    removeFile('agent_docs/authentication.md');
     writeFile('agent_docs/service_architecture.md', getFrontendOnlyArchDoc());
   }
 

@@ -109,6 +109,37 @@ app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
 app.use(express.json({ limit: '10kb' })); // prevent large payload attacks
 ```
 
+### Request Correlation IDs
+
+Every request should carry a unique ID for tracing errors from client reports to server logs. Add this middleware early in the stack (before route handlers):
+
+```typescript
+// middleware/requestId.ts
+import { randomUUID } from 'node:crypto';
+
+export function requestId(req: Request, res: Response, next: NextFunction): void {
+  const id = req.headers['x-request-id'] as string || randomUUID();
+  req.id = id;
+  res.setHeader('X-Request-ID', id);
+  next();
+}
+```
+
+Include the request ID in error responses so users can report it:
+
+```typescript
+// In errorHandler.ts — for unknown errors
+res.status(500).json({
+  error: { code: 'INTERNAL_ERROR', message: 'An unexpected error occurred', requestId: req.id },
+});
+```
+
+And in all log output so you can search by ID:
+
+```typescript
+console.error(`[${req.id}] Unhandled error:`, err);
+```
+
 ### Environment Variables
 
 - All secrets and environment-specific values go in `.env` (never committed)

@@ -154,6 +154,34 @@ export default [
     content: '22\n',
   });
 
+  if (isFullStack) {
+    const dbName = projectName.replace(/-/g, '_') + '_dev';
+    files.push({
+      path: 'docker-compose.yml',
+      content: `services:
+  db:
+    image: mysql:8
+    ports:
+      - '3306:3306'
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: ${dbName}
+      MYSQL_USER: devuser
+      MYSQL_PASSWORD: devpassword
+    volumes:
+      - dbdata:/var/lib/mysql
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  dbdata:
+`,
+    });
+  }
+
   files.push({
     path: '.github/workflows/ci.yml',
     content: `name: CI
