@@ -82,6 +82,7 @@ Target: Lighthouse scores of 90+ across all categories (Performance, Accessibili
 - Serve modern formats (WebP/AVIF) with fallbacks
 - Lazy-load below-the-fold images: `loading="lazy"`
 - Set explicit `width` and `height` to prevent layout shift
+- Use ThumbHash placeholders for smooth loading — see `agent_docs/image_optimization.md` for the full pipeline
 
 ### Code Splitting
 
