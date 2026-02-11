@@ -45,6 +45,20 @@ This project uses the [Superpowers](https://github.com/obra/superpowers) plugin.
 3. **Implement** — Use `superpowers:executing-plans` or `superpowers:subagent-driven-development`. Follow TDD (`superpowers:test-driven-development`). Commit after completing implementation.
 4. **Validate** — Use `superpowers:verification-before-completion`. Evidence before claims. All lint, tests, and build must pass. CI runs automatically on PRs. Use `superpowers:finishing-a-development-branch` to merge or PR.
 
+## Model Routing
+
+When spawning subagents (Task tool), select the model by task complexity:
+
+| Task type | Model | Examples |
+|-----------|-------|---------|
+| Research, architecture, complex analysis | `opus` | Brainstorming, design review, debugging complex issues |
+| Code implementation | `sonnet` | Writing features, tests, refactors from a plan |
+| File search, lookups, simple commands | `haiku` | Grep/glob exploration, running lint/build/test |
+
+**Rule:** Default to `sonnet` for subagents. Escalate to `opus` only when the task requires cross-cutting reasoning or architectural judgment. Use `haiku` for read-only exploration and command execution.
+
+The main conversation model is user-controlled (`/model` to switch). Use Opus for Research and Plan phases, Sonnet for Implement and Validate.
+
 ## Git
 
 - **Branch per feature:** `feature/<short-description>` (e.g., `feature/add-login-form`)
