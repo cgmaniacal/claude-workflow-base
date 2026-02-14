@@ -160,18 +160,17 @@ export default [
       path: 'docker-compose.yml',
       content: `services:
   db:
-    image: mysql:8
+    image: postgres:16
     ports:
-      - '3306:3306'
+      - '5432:5432'
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: ${dbName}
-      MYSQL_USER: devuser
-      MYSQL_PASSWORD: devpassword
+      POSTGRES_DB: ${dbName}
+      POSTGRES_USER: devuser
+      POSTGRES_PASSWORD: devpassword
     volumes:
-      - dbdata:/var/lib/mysql
+      - dbdata:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost']
+      test: ['CMD-SHELL', 'pg_isready -U devuser -d ${dbName}']
       interval: 10s
       timeout: 5s
       retries: 5

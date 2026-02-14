@@ -2,7 +2,7 @@
 
 ## ORM
 
-This project uses **Prisma** with **MySQL**.
+This project uses **Prisma** with **PostgreSQL**.
 
 ## Schema Location
 
@@ -31,8 +31,8 @@ npx prisma studio               # Visual data browser
 
 ## Conventions
 
-- Table names: PascalCase singular in Prisma (`User`), maps to snake_case plural in MySQL (`users`) via `@@map`.
-- Column names: camelCase in Prisma, snake_case in MySQL via `@map`.
+- Table names: PascalCase singular in Prisma (`User`), maps to snake_case plural in PostgreSQL (`users`) via `@@map`.
+- Column names: camelCase in Prisma, snake_case in PostgreSQL via `@map`.
 - Every table has: `id` (auto-increment), `createdAt`, `updatedAt`.
 - Use `@relation` explicitly — never rely on implicit relations.
 - Add `@@index` for columns used in WHERE clauses or JOINs.
@@ -181,6 +181,101 @@ model User {
 
   @@map("users")
 }
+```
+
+## PostgreSQL-Specific Conventions
+
+### Data Types
+
+PostgreSQL has richer native types than other databases. Use them via Prisma's `@db` attribute:
+
+| Use case | Prisma type | PostgreSQL type | Notes |
+|----------|-------------|-----------------|-------|
+| Primary key (UUID) | `String @id @default(uuid())` | `uuid` | Use `@db.Uuid` for native UUID storage |
+| Primary key (auto-increment) | `Int @id @default(autoincrement())` | `serial` | Default in examples; UUID preferred for public-facing IDs |
+| JSON data | `Json` | `jsonb` | Use `@db.JsonB` — always JSONB, never JSON (JSONB is indexable and faster to query) |
+| Arrays | `String[]`, `Int[]` | `text[]`, `integer[]` | Native array support — no junction table needed for simple lists |
+| Enums | `enum Role { ADMIN USER }` | `CREATE TYPE` | Prisma creates native PostgreSQL enums |
+| Text | `String` | `text` | No performance difference between `text` and `varchar(n)` in PostgreSQL — use `text` unless you need a DB-level length constraint |
+| Timestamps | `DateTime` | `timestamptz` | Use `@db.Timestamptz` — always store with timezone |
+
+```prisma
+model Product {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String
+  tags        String[]
+  metadata    Json     @db.JsonB
+  price       Decimal  @db.Decimal(10, 2)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@map("products")
+}
+```
+
+### Common Gotchas
+
+**1. Connection pooling** — PostgreSQL has a default connection limit of 100. Prisma opens a pool per process. Set the pool size in the connection string to avoid hitting the limit, especially in development where multiple tools (API, Prisma Studio, migrations) may connect simultaneously:
+
+```
+DATABASE_URL="postgresql://devuser:devpassword@localhost:5432/myapp_dev?connection_limit=5"
+```
+
+In production behind a serverless or multi-process setup, consider PgBouncer or Prisma Accelerate for connection pooling.
+
+**2. Case sensitivity** — PostgreSQL lowercases all unquoted identifiers. Prisma handles this with `@@map`/`@map`, but if you write raw SQL queries (`$queryRaw`), always use quoted identifiers for camelCase column names:
+
+```typescript
+// Correct: quoted identifier
+await prisma.$queryRaw`SELECT "createdAt" FROM users WHERE id = ${id}`;
+
+// Wrong: PostgreSQL will look for "createdat"
+await prisma.$queryRaw`SELECT createdAt FROM users WHERE id = ${id}`;
+```
+
+**3. Timezone handling** — PostgreSQL stores `timestamptz` in UTC and converts on retrieval based on the session timezone. Always use `@db.Timestamptz` (not `@db.Timestamp`) to ensure timezone awareness. Prisma returns JavaScript `Date` objects which are inherently UTC.
+
+**4. Extensions** — PostgreSQL features like UUID generation (`uuid-ossp`, `pgcrypto`) or full-text search require enabling extensions. Prisma can't create extensions — use a migration:
+
+```sql
+-- In a Prisma migration file
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+```
+
+Prisma's `@default(uuid())` uses `gen_random_uuid()` from `pgcrypto`, which PostgreSQL 13+ includes by default. No extension needed for basic UUID generation on PostgreSQL 13+.
+
+**5. JSONB querying** — When you need to filter by fields inside a JSONB column, use Prisma's JSON filtering:
+
+```typescript
+const products = await prisma.product.findMany({
+  where: {
+    metadata: {
+      path: ['category'],
+      equals: 'electronics',
+    },
+  },
+});
+```
+
+For complex JSONB queries beyond what Prisma supports, use `$queryRaw` with PostgreSQL's native JSONB operators (`->`, `->>`, `@>`, `?`).
+
+**6. Full-text search** — PostgreSQL has built-in full-text search. For simple search needs, this eliminates the need for Elasticsearch or Algolia:
+
+```typescript
+// Raw query for full-text search
+const results = await prisma.$queryRaw`
+  SELECT id, name
+  FROM products
+  WHERE to_tsvector('english', name || ' ' || description)
+    @@ plainto_tsquery('english', ${searchTerm})
+`;
+```
+
+Add a GIN index on the tsvector for performance:
+
+```sql
+CREATE INDEX idx_products_search ON products
+  USING GIN (to_tsvector('english', name || ' ' || description));
 ```
 
 ## Schema Changes Checklist

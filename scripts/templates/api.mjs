@@ -168,7 +168,7 @@ export function errorHandler(
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 `,
@@ -176,7 +176,7 @@ datasource db {
 
   files.push({
     path: 'apps/api/.env.example',
-    content: `DATABASE_URL="mysql://devuser:devpassword@localhost:3306/${dbName}"
+    content: `DATABASE_URL="postgresql://devuser:devpassword@localhost:5432/${dbName}"
 PORT=3001
 CORS_ORIGIN="http://localhost:5173"
 `,
@@ -184,7 +184,7 @@ CORS_ORIGIN="http://localhost:5173"
 
   files.push({
     path: 'apps/api/.env',
-    content: `DATABASE_URL="mysql://devuser:devpassword@localhost:3306/${dbName}"
+    content: `DATABASE_URL="postgresql://devuser:devpassword@localhost:5432/${dbName}"
 PORT=3001
 CORS_ORIGIN="http://localhost:5173"
 `,

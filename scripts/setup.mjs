@@ -110,7 +110,7 @@ async function main() {
 
   console.log('\n  Project Setup\n');
   console.log('  1) Frontend only  (React + Vite + Tailwind)');
-  console.log('  2) Full stack     (React + Express + Prisma + MySQL)\n');
+  console.log('  2) Full stack     (React + Express + Prisma + PostgreSQL)\n');
 
   let choice = '';
   while (choice !== '1' && choice !== '2') {

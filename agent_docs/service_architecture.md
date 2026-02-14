@@ -5,17 +5,17 @@
 This boilerplate supports two configurations:
 
 - **Frontend only** — Just `apps/web`. No API server, no database. Suitable for static sites, SPAs with external APIs, or content-driven pages.
-- **Full stack** — `apps/web` + `apps/api` + `packages/shared` + MySQL. For applications that need their own data persistence and internal APIs.
+- **Full stack** — `apps/web` + `apps/api` + `packages/shared` + PostgreSQL. For applications that need their own data persistence and internal APIs.
 
 When starting a new project, delete what you don't need. The sections below describe the full-stack setup. Frontend-only projects can ignore everything after the `apps/web` section.
 
 ## Full-Stack Overview
 
 ```
-┌─────────────┐     HTTP/JSON     ┌─────────────┐     Prisma     ┌─────────┐
-│   apps/web  │  ──────────────>  │   apps/api  │  ──────────>   │  MySQL  │
-│  React SPA  │  <──────────────  │   Express   │  <──────────   │         │
-└─────────────┘                   └─────────────┘                └─────────┘
+┌─────────────┐     HTTP/JSON     ┌─────────────┐     Prisma     ┌────────────┐
+│   apps/web  │  ──────────────>  │   apps/api  │  ──────────>   │ PostgreSQL │
+│  React SPA  │  <──────────────  │   Express   │  <──────────   │            │
+└─────────────┘                   └─────────────┘                └────────────┘
        │                                │
        └──────── both import ───────────┘
                       │
@@ -50,7 +50,7 @@ apps/web/src/
 ## apps/api (Backend)
 
 - **Framework:** Express + TypeScript
-- **ORM:** Prisma (MySQL)
+- **ORM:** Prisma (PostgreSQL)
 - **Responsibilities:** REST API, business logic, data access
 
 ### Source Structure

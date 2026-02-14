@@ -7,8 +7,8 @@
 | Monorepo | Turborepo, npm workspaces | Always |
 | Frontend | React, TypeScript, Vite, TailwindCSS, SASS, Zustand | Always |
 | Backend | Express, TypeScript | Optional |
-| Database | MySQL, Prisma ORM | Optional |
-| Local DB | Docker Compose (MySQL container) | Optional |
+| Database | PostgreSQL, Prisma ORM | Optional |
+| Local DB | Docker Compose (PostgreSQL container) | Optional |
 | Testing | Vitest | Always |
 | Linting | ESLint + Prettier | Always |
 | CI | GitHub Actions (lint, test, build) | Always |
@@ -16,7 +16,7 @@
 
 This boilerplate supports two project scales:
 - **Frontend only** — `apps/web` only. No API, no database.
-- **Full stack** — `apps/web` + `apps/api` + `packages/shared` + MySQL.
+- **Full stack** — `apps/web` + `apps/api` + `packages/shared` + PostgreSQL.
 
 When starting a new project from this boilerplate, decide which scale applies and omit what isn't needed.
 
